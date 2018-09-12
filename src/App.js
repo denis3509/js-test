@@ -1,12 +1,12 @@
 import React, {Component} from 'react';
-import logo from './logo.svg';
+
 import './App.css';
 import TableMain from './components/table/TableMain'
 import {api} from "./network/api";
 import Input from '@material-ui/core/Input';
- import Header from'./components/Header';
+import Header from'./components/Header';
 import MenuItem from '@material-ui/core/MenuItem';
-
+import  {createStore} from 'redux'
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 

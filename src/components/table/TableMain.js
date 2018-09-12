@@ -29,6 +29,7 @@ class TableMain extends React.Component {
         filteredAndSorted: undefined,
         filtered: false,
         chosenRow: undefined,
+        filterInput: '',
       })
     }
   }
