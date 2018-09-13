@@ -9,6 +9,8 @@ import MenuItem from '@material-ui/core/MenuItem';
 import  {createStore} from 'redux'
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
+import {setDataArray} from "./actions/tableActions";
+import {connect} from 'react-redux'
 
 
 class App extends Component {
@@ -78,18 +80,6 @@ class App extends Component {
 
   componentDidMount() {
     console.log('App mounted');
-    api.getLittleData()
-      .then((res) => {
-        console.log(res.data);
-        this.setState({
-          dataArray: res.data,
-
-          loading: false
-        })
-      })
-      .catch((error) => {
-        console.log(error);
-      });
 
   }
 
@@ -115,10 +105,7 @@ class App extends Component {
 
         </FormControl>
         <TableMain
-          dataArray={this.state.dataArray}
-
           fieldSet={fieldSet}
-          loading={this.state.loading}
         />
 
       </div>
@@ -126,4 +113,4 @@ class App extends Component {
   }
 }
 
-export default App;
+export default connect()(App);

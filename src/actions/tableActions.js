@@ -54,3 +54,8 @@ export const changeFilteredAndSorted =(filteredAndSorted)=>{
     filteredAndSorted
   }
 };
+export const changeLoading = ()=>{
+  return {
+    type: tableConstants.CHANGE_LOADING,
+  }
+}

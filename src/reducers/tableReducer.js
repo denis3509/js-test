@@ -48,6 +48,10 @@ function table(state = initialState, action) {
       return Object.assign({},state,{
         filteredAndSorted : action.filteredAndSorted
       });
+    case (tableConstants.CHANGE_LOADING) :
+      return Object.assign({},state,{
+        loading: !state.loading,
+      });
     default :
       return state;
   }

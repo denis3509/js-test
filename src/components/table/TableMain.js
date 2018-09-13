@@ -6,19 +6,78 @@ import {api} from '../../network/api'
 import Paper from '@material-ui/core/Paper';
 import Input from '@material-ui/core/Input';
 import Button from '@material-ui/core/Button';
+import {connect} from 'react-redux';
+import {
+  setDataArray, changeLoading, changeCurrentSortField,
+  changeSortOrder, changeFiltered, changeFilterInput,
+  changeFilteredAndSorted, changePageNumber, setChosenRow
+} from "../../actions/tableActions";
+
+const mapStateToProps = (state) => {
+  return {
+    filtered: state.filtered,
+    chosenRow: state.chosenRow,
+    pageNumber: state.pageNumber,
+    filterInput: state.filterInput,
+    currentSortField: state.currentSortField,
+    sortOrder: state.sortOrder,
+    filteredAndSorted: state.filteredAndSorted,
+    loading: state.loading,
+    dataArray: state.dataArray,
+  }
+};
+
+const mapDispatchToProps = (dispatch, ownProps) => {
+  return {
+    setDataArray: (dataArray) => {
+      dispatch(setDataArray(dataArray));
+    },
+    changeLoading: () => {
+      dispatch(changeLoading())
+    },
+    changeCurrentSortField: (sortField) => {
+      dispatch(changeCurrentSortField(sortField))
+    },
+    changeSortOrder: (sortOrder) => {
+      dispatch(changeSortOrder(sortOrder))
+    },
+    changePageNumber: (pageNumber)=>{
+      dispatch(changePageNumber(pageNumber));
+    },
+    changeFiltered : ()=>{
+      dispatch(changeFiltered());
+    },
+    changeFilterInput: (filterInput) =>{
+      dispatch(changeFilterInput(filterInput));
+    },
+    changeFilteredAndSorted : (filteredAndSorted)=> {
+      dispatch(changeFilteredAndSorted(filteredAndSorted));
+    },
+    setChosenRow : (chosenRow)=>{
+      dispatch(setChosenRow(chosenRow))
+    },
+  }
+};
+
 
 class TableMain extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
 
-      filtered: false,
-      chosenRow: undefined,
-      pageNumber: 1,
-      filterInput: '',
-      sortOrder: undefined,
-      filteredAndSorted: undefined,
     }
+  }
+
+  componentDidMount() {
+    api.getLittleData()
+      .then((res) => {
+        console.log(res.data);
+        this.props.setDataArray(res.data);
+        this.props.changeLoading();
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   }
 
   componentDidUpdate(prevProps) {
@@ -34,7 +93,6 @@ class TableMain extends React.Component {
     }
   }
 
-
   sortByField = (field, order) => {
     let newArr;
     let oldArr;
@@ -43,8 +101,8 @@ class TableMain extends React.Component {
     if (order === 'UP') sortOrder = '↑';
     else sortOrder = '↓';
 
-    this.state.filtered
-      ? oldArr = this.state.filteredAndSorted
+    this.props.filtered
+      ? oldArr = this.props.filteredAndSorted
       : oldArr = this.props.dataArray;
 
     switch (order) {
@@ -81,7 +139,7 @@ class TableMain extends React.Component {
   };
 
   handleClickRow = (chosenRow) => {
-    this.setState ({
+    this.setState({
       chosenRow
     })
   };
@@ -120,22 +178,42 @@ class TableMain extends React.Component {
 
   };
 
+  handleClickHeaderCell = (sortField) => {
+    if (this.props.currentSortField === sortField) {
+      if (this.props.sortOrder === '↑') {
+        this.sortByField(sortField, 'DOWN');
+        this.props.changeCurrentSortField(sortField);
+      } else {
+        this.sortByField(sortField, 'UP');
+        this.props.changeCurrentSortField(sortField);
+      }
+    } else {
+
+      this.sortByField(sortField, 'UP');
+      this.props.changeCurrentSortField(sortField);
+
+    }
+
+  };
+
   handleChangePageNumber = (pageNumber) => {
-    this.setState({pageNumber})
+   this.props.changePageNumber(pageNumber);
   };
 
 
   render() {
-    const {chosenRow, pageNumber} = this.state;
+    const {chosenRow, pageNumber,currentSortField,
+    filterInput,fieldSet,sortOrder,loading,
+    dataArray,filteredAndSorted} = this.props;
     let dataArrayShown;
-    this.state.filteredAndSorted
-      ? dataArrayShown = this.state.filteredAndSorted.slice((pageNumber - 1) * 50, pageNumber * 50 - 1)
-      : dataArrayShown = this.props.dataArray.slice((pageNumber - 1) * 50, pageNumber * 50 - 1);
+     filteredAndSorted
+      ? dataArrayShown =  filteredAndSorted.slice((pageNumber - 1) * 50, pageNumber * 50 - 1)
+      : dataArrayShown =  dataArray.slice((pageNumber - 1) * 50, pageNumber * 50 - 1);
 
     return (
       <div>
         <Input
-          value={this.state.filterInput}
+          value={ filterInput}
           onChange={this.handleChangeFilterInput}
         />
         <Button
@@ -144,20 +222,22 @@ class TableMain extends React.Component {
           Найти
         </Button>
         <Table
-          fieldSet={this.props.fieldSet}
-          sortOrder={this.state.sortOrder}
+          handleClickHeaderCell={this.handleClickHeaderCell}
+          fieldSet={ fieldSet}
+          sortOrder={ sortOrder}
           dataArray={dataArrayShown}
           sortByField={this.sortByField}
-          loading={this.props.loading}
+          loading={ loading}
           handleClickRow={this.handleClickRow}
+          currentSortField={currentSortField}
         />
         <Pagination
-          pageNumber={this.state.pageNumber}
+          pageNumber={ pageNumber}
           handleChangePageNumber={this.handleChangePageNumber}
-          countPages={Math.floor(this.props.dataArray.length/50)+1}
+          countPages={Math.floor(dataArray.length / 50) + 1}
         />
         {chosenRow && <ChosenRow
-           chosenRow={chosenRow}
+          chosenRow={chosenRow}
         />}
         {/*<Controls
           currentPage={this.state.pageNumber}
@@ -168,4 +248,5 @@ class TableMain extends React.Component {
   }
 }
 
-export default TableMain
+export default connect(mapStateToProps, mapDispatchToProps)(TableMain)
+//export default TableMain
